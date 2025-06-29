@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Zeta Orion AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- CSS conservé à l'identique, IA page "comme avant", panneau premium admin visible si admin -->
+  <style>
+    body {
+      background: radial-gradient(ellipse 120% 100% at 50% 0%, #3fd5ff 0%, #01132d 100%);
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+      color: #f1f7fa;
+      overflow-x: hidden;
+    }
+    .centered-flex { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .login-card {
+      background: linear-gradient(115deg, #192143ee 80%, #38e8ff33 100%);
+      border-radius: 2.5em;
+      padding: 2.5em 2.8em 2em 2.8em;
+      box-shadow: 0 8px 60px 0 #38e8ff55, 0 1px 12px #000a;
+      min-width: 350px;
+      max-width: 96vw;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: pop 1.2s cubic-bezier(.24,1.43,.57,1.14);
+      border: 2.5px solid #38e8ff80;
+      z-index: 2;
+    }
+    @keyframes pop { from { transform: scale(0.93); opacity:0; } to { transform: scale(1); opacity:1; } }
+    .login-logo { width: 90px; height: 90px; border-radius: 100%; object-fit: cover; box-shadow: 0 0 0 7px #38e8ff55, 0 0 32px #38e8ff99; background: #1a2b4a; margin-bottom: 1.2em; position: relative; border: 3px solid #38e8ff; animation: aura 4s linear infinite alternate; }
+    @keyframes aura { 0% { box-shadow: 0 0 0 7px #38e8ff55, 0 0 32px #38e8ff99;} 100% { box-shadow: 0 0 0 16px #38e8ff22, 0 0 54px #38e8ffcc;} }
+    .login-title { font-size: 2.2em; font-family: 'Orbitron', Arial, sans-serif; color: #38e8ff; letter-spacing: 0.09em; margin-bottom: .2em; text-shadow: 0 0 14px #38e8ff88; text-align: center; font-weight: bold; line-height: 1.1; }
+    .login-sub { color: #b6e9ff; font-size: 1.1em; margin-bottom: 2.5em; text-align: center; letter-spacing: 0.02em; font-style: italic; }
+    .login-fields { display: flex; gap: 1em; width: 100%; margin-bottom: 1.1em; justify-content: center; }
+    .login-fields input { flex: 1 1 0; min-width: 0; }
+    .pw-eye { position: absolute; right: 1em; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #38e8ff; font-size: 1.28em; opacity: 0.8; z-index: 2; padding: 0 0.2em; transition: color .15s;}
+    .pw-eye:hover, .pw-eye:focus { color: #fff; }
+    .pw-field { position: relative; flex: 1 1 0; min-width: 0; display: flex; align-items: center; }
+    input[type="text"], input[type="password"] { width: 100%; padding: 1em 1.1em; border-radius: 1.2em; border: 1.7px solid #38e8ff45; background: #122346; color: #38e8ff; font-size: 1.13em; font-family: inherit; transition: border .18s, box-shadow .18s, background .19s; margin-bottom: 0.06em; box-shadow: 0 2px 20px #38e8ff12; outline: none; letter-spacing: 0.03em; }
+    input[type="text"]:focus, input[type="password"]:focus { border: 1.7px solid #38e8ff; box-shadow: 0 0 9px #38e8ff55; background: #163273; }
+    .btn-main { width: 100%; background: linear-gradient(89deg,#1976d2 10%,#38e8ff 90%); color: #fff; border: none; border-radius: 1.2em; font-size: 1.17em; font-weight: bold; letter-spacing: 0.04em; padding: 0.85em 0; margin-top: 1.3em; cursor: pointer; box-shadow: 0 0 14px #38e8ff33; transition: background .15s, color .13s, box-shadow .16s; text-shadow: 0 0 6px #38e8ff29; position: relative; z-index: 2; }
+    .btn-main:hover, .btn-main:focus { background: linear-gradient(89deg,#38e8ff 10%,#1976d2 90%); color: #122357; box-shadow: 0 0 24px #38e8ff77; }
+    .link-switch { color: #38e8ff; margin-top: 1.1em; font-size: 1em; cursor: pointer; background: none; border: none; text-decoration: underline; padding: 0; transition: color .14s; }
+    .link-switch:hover, .link-switch:focus { color: #fff; }
+    .error-msg { color: #ff3b62; background: #2f1a24; border-radius: 0.7em; margin-top: 0.7em; padding: 0.5em 1.1em; font-size: 1.08em; text-align: center; letter-spacing: 0.03em; width: 100%; box-shadow: 0 0 2px #ff3b6233; }
+    .success-msg { color: #49ff7a; background: #1d2b1f; border-radius: 0.7em; margin-top: 0.7em; padding: 0.5em 1.1em; font-size: 1.08em; text-align: center; letter-spacing: 0.03em; width: 100%; box-shadow: 0 0 2px #49ff7a33; }
+    #admin-btn { display: block; background: linear-gradient(92deg, #38e8ff 45%, #1976d2 100%); color: #0e1e37; border: none; border-radius: 1.5em; font-weight: bold; padding: 0.7em 2em; font-size: 1.12em; margin: 2em auto 0.2em auto; cursor: pointer; box-shadow: 0 0 18px #38e8ff44; transition: background 0.13s, color 0.14s, box-shadow .12s; letter-spacing: 0.05em; }
+    #admin-btn:hover, #admin-btn:focus { background: linear-gradient(92deg, #1976d2 10%, #38e8ff 90%); color: #fff; }
+    .admin-banner { background: linear-gradient(90deg, #222 55%, #38e8ff 90%); color: #fff; font-weight: bold; letter-spacing: 0.07em; border-radius: 1.4em; padding: 0.7em 1.5em; margin: 1.1em auto 1.5em auto; width: fit-content; box-shadow: 0 0 18px #38e8ff77; animation: admin-glow 1.2s infinite alternate; font-size: 1.13em; text-align: center; }
+    @keyframes admin-glow { 0% { box-shadow: 0 0 12px #38e8ff99;} 100% { box-shadow: 0 0 38px #38e8ffcc;} }
+    .admin-user-list { margin: 0; padding: 0; list-style: none; }
+    .admin-user-list li { display: flex; justify-content: space-between; align-items: center; background: #21294a; border-radius: 0.7em; margin-bottom: 0.45em; padding: 0.42em 0.95em 0.42em 1em; font-size: 1.09em; color: #fff; transition: background 0.16s; }
+    .admin-user-list li.admin { color: #38e8ff; font-weight: bold; background: #1b2845; }
+    .admin-user-list button { background: #ff3b62; color: #fff; border: none; border-radius: 2em; padding: 0.3em 1.1em; font-weight: bold; font-size: 0.98em; margin-left: 0.7em; cursor: pointer; box-shadow: 0 0 6px #ff3b6233; transition: background 0.13s; }
+    .admin-user-list button:disabled { background: #888; color: #fff; cursor: not-allowed; opacity: 0.6; }
+    .admin-user-list button:hover:enabled { background: #c0223e; }
+    .premium-badge {
+      display: inline-block;
+      margin-left: 0.4em;
+      background: linear-gradient(95deg, #ffd700 40%, #ffe97a 100%);
+      color: #21294a;
+      border-radius: 1.1em;
+      font-weight: bold;
+      font-size: 0.78em;
+      padding: 0.2em 0.7em;
+      letter-spacing: 0.04em;
+      box-shadow: 0 0 10px #ffd70044;
+      vertical-align: middle;
+      border: 1px solid #ffe97a;
+    }
+    .premium-panel {
+      background: linear-gradient(100deg, #222 60%, #ffd70033 100%);
+      border: 2px solid #ffd70099;
+      border-radius: 1.4em;
+      margin: 2em auto 1.5em auto;
+      padding: 1.2em 1em 1em 1em;
+      color: #fff2b0;
+      box-shadow: 0 0 24px #ffd70033;
+      max-width: 480px;
+      text-align: left;
+    }
+    .premium-panel h4 { color: #ffd700; margin-bottom: 0.7em; }
+    .premium-panel ul { color: #fff2b0; margin: 0 0 0 1em; font-size: 1.02em;}
+    .premium-panel li { margin-bottom: 0.3em;}
+    .container {
+      max-width: 650px;
+      margin: 36px auto 0 auto;
+      padding: 26px 26px 18px 26px;
+      background: #192143e6;
+      border-radius: 1.4em;
+      box-shadow: 0 4px 24px rgba(56,232,255,0.15);
+      position: relative;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      margin-bottom: 30px;
+    }
+    .ai-photo-box {
+      position: relative;
+      width: 76px;
+      height: 76px;
+    }
+    .ai-photo {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3.5px solid #38e8ff;
+      box-shadow: 0 0 0 8px #38e8ff11, 0 0 24px #38e8ff44, 0 0 44px #38e8ff66;
+      background: #18305a;
+      transition: box-shadow 0.3s;
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 1;
+    }
+    .ai-photo-box::before {
+      content: "";
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      width: 110px; height: 110px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #38e8ffcc 0%, transparent 80%);
+      filter: blur(5px);
+      opacity: 0.6;
+      z-index: 0;
+    }
+    .ai-title {
+      color: #38e8ff;
+      font-size: 2.1em;
+      font-weight: bold;
+      letter-spacing: 0.05em;
+      margin: 0 0 2px 0;
+      line-height: 1.1;
+      text-shadow: 0 0 8px #38e8ff99,0 0 24px #38e8ffcc;
+      filter: brightness(1.2);
+      text-transform: uppercase;
+      animation: neon-flicker 2.8s infinite alternate;
+      font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+    }
+    @keyframes neon-flicker {
+      0%, 100% { text-shadow: 0 0 8px #38e8ff99,0 0 24px #38e8ffcc;}
+      85% { text-shadow: 0 0 4px #38e8ff55, 0 0 16px #38e8ff55; }
+      90% { text-shadow: 0 0 8px #38e8ff99,0 0 24px #38e8ffcc;}
+    }
+    .ai-sub { color: #9eefff; font-size: 1em; letter-spacing: 0.03em; margin-top: 2px; font-style: italic; }
+    .chat-box {
+      min-height: 340px;
+      max-height: 52vh;
+      overflow-y: auto;
+      padding: 8px 0;
+      margin-bottom: 20px;
+      border-radius: 1.4em;
+      background: rgba(20, 160, 255, 0.04);
+      box-shadow: 0 2px 16px #38e8ff18;
+      transition: background 0.3s;
+    }
+    .msg { margin: 16px 0; display: flex; flex-direction: column; }
+    .user { align-items: flex-end; }
+    .user .bubble {
+      background: linear-gradient(102deg,#38e8ff 60%,#1976d2 140%);
+      color: #fff;
+      border-radius: 1.2em 1em 0.5em 1.2em;
+      box-shadow: 0 0 16px #38e8ff55,0 0 2px #38e8ff33;
+      border: 1.5px solid #38e8ff25;
+    }
+    .ai { align-items: flex-start; }
+    .ai .bubble {
+      background: linear-gradient(96deg,#26376c 80%,#232445 120%);
+      color: #e9f1ff;
+      border-radius: 1.2em 1.2em 1.2em 0.5em;
+      border: 1.5px solid #38e8ff22;
+      box-shadow: 0 0 12px #38e8ff22;
+    }
+    .bubble {
+      padding: 1em 1.3em;
+      margin: 2px 0;
+      font-size: 1.11em;
+      line-height: 1.7;
+      max-width: 87%;
+      word-break: break-word;
+      box-shadow: 0 2px 12px #38e8ff09;
+      position: relative;
+      transition: background 0.15s, color 0.15s;
+    }
+    .ai .bubble:before {
+      content: "🪐";
+      position: absolute;
+      left: -1.9em;
+      top: 0.7em;
+      font-size: 1.3em;
+      opacity: 0.36;
+    }
+    .user .bubble:before { display: none; }
+    form#form { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    input[type="text"]#input {
+      flex: 1 1 180px;
+      min-width: 0;
+      padding: 1em 1.1em;
+      border-radius: 2em;
+      border: none;
+      font-size: 1.14em;
+      background: #15213a;
+      color: #e9f1ff;
+      outline: none;
+      box-shadow: 0 2px 8px #38e8ff12;
+      border: 1.5px solid #38e8ff22;
+      transition: border 0.17s;
+    }
+    input[type="text"]#input:focus { border: 1.5px solid #38e8ff; background: #19234a; }
+    button[type="submit"] {
+      padding: 1em 1.4em;
+      font-size: 1.12em;
+      border-radius: 2em;
+      border: none;
+      background: #38e8ff;
+      color: #1b2b48;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s;
+      box-shadow: 0 2px 8px #38e8ff22;
+      text-shadow: 0 0 4px #fff6;
+      letter-spacing: 0.03em;
+      margin-left: 2px;
+    }
+    button[type="submit"]:active, button[type="submit"]:focus {
+      background: #1976d2;
+      color: #fff;
+    }
+    .newchat-btn {
+      background: linear-gradient(92deg, #38e8ff 45%, #1976d2 100%);
+      color: #192143;
+      border: none;
+      border-radius: 1.2em;
+      font-weight: bold;
+      padding: 0.7em 1.7em;
+      font-size: 1.07em;
+      box-shadow: 0 0 10px #38e8ff33;
+      margin-right: 1em;
+      margin-top: 1em;
+      cursor: pointer;
+      transition: background 0.13s, color 0.14s, box-shadow .12s;
+      letter-spacing: 0.05em;
+      float: left;
+    }
+    .newchat-btn:hover, .newchat-btn:focus {
+      background: linear-gradient(92deg, #1976d2 10%, #38e8ff 90%);
+      color: #fff;
+    }
+    #logout-btn {
+      margin-top:1em;
+      background:#2e3c57;
+      color:#38e8ff;
+      font-weight:bold;
+      border-radius:1em;
+      padding:0.5em 1.3em;
+      float:right;
+      margin-bottom: 1em;
+    }
+    @media (max-width: 550px) {
+      .login-card { min-width: 0; padding: 1em 0.5em 1em 0.5em; }
+      .login-title { font-size: 1.18em;}
+      .admin-banner { font-size:0.97em;}
+      .container { padding: 1vw; }
+      .newchat-btn { width: 100%; margin-right: 0; float: none; }
+      .premium-panel { padding: 1em 0.3em 1em 0.3em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="centered-flex" id="login-section">
+    <form class="login-card" id="login-form" autocomplete="off">
+      <img src="Orion.jpg" alt="Logo Zeta Orion IA" class="login-logo">
+      <div class="login-title">Zeta Orion AI</div>
+      <div class="login-sub">Connexion à votre espace intelligent</div>
+      <div class="login-fields">
+        <input type="text" id="login-user" placeholder="Identifiant" autocomplete="username" required autofocus>
+        <div class="pw-field">
+          <input type="password" id="login-pass" placeholder="Mot de Passe" autocomplete="current-password" required>
+          <button type="button" class="pw-eye" id="toggle-pw" aria-label="Afficher/Masquer le mot de passe">&#128065;</button>
+        </div>
+      </div>
+      <button type="submit" class="btn-main">Se connecter</button>
+      <button type="button" class="link-switch" id="to-signup">Créer un compte</button>
+      <button type="button" id="admin-btn">ADMIN</button>
+      <div class="error-msg" id="login-error" style="display:none"></div>
+    </form>
+    <form class="login-card" id="signup-form" autocomplete="off" style="display:none">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Logo Zeta Orion IA" class="login-logo">
+      <div class="login-title">Créer un compte</div>
+      <div class="login-fields">
+        <input type="text" id="signup-user" placeholder="Identifiant" required autocomplete="username">
+        <div class="pw-field">
+          <input type="password" id="signup-pass" placeholder="Mot de Passe" required autocomplete="new-password">
+          <button type="button" class="pw-eye" id="toggle-pw-signup" aria-label="Afficher/Masquer le mot de passe">&#128065;</button>
+        </div>
+      </div>
+      <input type="password" id="signup-pass2" placeholder="Confirmer le mot de passe" required autocomplete="new-password" style="width:100%;margin-bottom: 0.5em;">
+      <button type="submit" class="btn-main">Créer mon compte</button>
+      <button type="button" class="link-switch" id="to-login">Déjà un compte ? Connexion</button>
+      <div class="error-msg" id="signup-error" style="display:none"></div>
+      <div class="success-msg" id="signup-success" style="display:none"></div>
+    </form>
+  </div>
+  <div id="main-app" style="display:none;">
+    <div class="container">
+      <div id="admin-banner" class="admin-banner" style="display:none;">
+        Compte administrateur connecté 🚀 <span class="premium-badge">PREMIUM</span><br>
+        Accès privilégié au panel de gestion et aux fonctionnalités premium.
+      </div>
+      <div id="premium-panel" class="premium-panel" style="display:none;">
+        <h4>Fonctionnalités Premium Admin</h4>
+        <ul>
+          <li>💡 <b>Questions illimitées</b> (pas de quota journalier)</li>
+          <li>🧹 <b>Effacer l'historique de tous les utilisateurs</b></li>
+          <li>🔎 <b>Rechercher dans tous les chats utilisateurs</b></li>
+          <li>🔧 <b>Réinitialiser le quota d'un utilisateur</b></li>
+          <li>🦾 <b>Suppression immédiate de tout compte</b></li>
+          <li>🌒 <b>Accès panel admin avancé</b></li>
+        </ul>
+        <button id="clear-all-histories" style="margin:0.6em 0 0 0; padding:0.5em 1.2em; border-radius:1em; border:none; font-weight:bold; background:#ffd700; color:#1b2b48; cursor:pointer;">Effacer tous les historiques</button>
+        <input type="text" id="search-chats" placeholder="Rechercher dans tous les chats..." style="margin:0.7em 0 0 0; border-radius:1.2em; border:1px solid #ffd700; padding:0.6em 1em; width:96%; color:#1b2b48; background:#fffbe5; font-size:1em;">
+        <div id="search-result" style="margin-top:0.6em; color:#ffd700; font-size:0.99em;"></div>
+      </div>
+      <div class="header">
+        <span class="ai-photo-box">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="Photo de Zeta Orion AI" class="ai-photo" id="ai-photo">
+        </span>
+        <div>
+          <h1 class="ai-title">Zeta Orion AI</h1>
+          <div class="ai-sub">L’intelligence Artificielle du projet Orion </div>
+        </div>
+      </div>
+      <div id="chat" class="chat-box" aria-live="polite"></div>
+      <form id="form" autocomplete="off">
+        <input type="text" id="input" placeholder="Pose ta question..." required autocomplete="off" />
+        <button type="submit" title="Envoyer">Envoyer</button>
+      </form>
+      <button id="newchat-btn" class="newchat-btn">Nouveau chat</button>
+      <button id="logout-btn">Déconnexion</button>
+      <div id="admin-panel" style="display:none;margin:2em auto 0 auto;text-align:center;max-width:450px;">
+        <h3 style="color:#38e8ff;">Panel Administrateur</h3>
+        <div id="admin-users-list" style="background:#26376c;padding:1em 1.2em;border-radius:1em;color:#fff;margin:1em 0 1em 0;">
+          <div style="font-size:1.09em;color:#38e8ff;font-weight:bold;margin-bottom:0.6em;">Liste des utilisateurs :</div>
+          <ul id="users-list" class="admin-user-list"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // -------- UTILISATEURS LOCAUX --------
+    const ADMIN_USER = "N.Lieutaud";
+    const ADMIN_PASS = "ZetaAIThanhTri2012";
+    const CHAT_LIMIT = 25;
+
+    function getUsers() {
+      try {
+        return JSON.parse(localStorage.getItem('zeta-users')) || [];
+      } catch { return []; }
+    }
+    function setUsers(users) {
+      localStorage.setItem('zeta-users', JSON.stringify(users));
+    }
+    if (!getUsers().some(u => u.user === ADMIN_USER)) {
+      const users = getUsers();
+      users.push({user:ADMIN_USER, pass:ADMIN_PASS, admin:true});
+      setUsers(users);
+    }
+    function checkLogin(u, p) {
+      const user = getUsers().find(obj => obj.user === u && obj.pass === p);
+      return user ? user : null;
+    }
+    function userExists(u) {
+      return getUsers().some(obj => obj.user === u);
+    }
+    function createUser(u, p) {
+      const admin = (u === ADMIN_USER && p === ADMIN_PASS);
+      const users = getUsers();
+      users.push({user: u, pass: p, admin: admin});
+      setUsers(users);
+    }
+    function isAdmin(u) {
+      const user = getUsers().find(obj => obj.user === u);
+      return user && user.admin;
+    }
+    function deleteUserAccount(username) {
+      let users = getUsers();
+      users = users.filter(u => u.user !== username);
+      setUsers(users);
+      localStorage.removeItem(getUserDayKey(username));
+      localStorage.removeItem(getChatKey(username));
+    }
+    function getChatKey(username) {
+      return "zeta-chat-" + username;
+    }
+    function clearChat(username) {
+      localStorage.removeItem(getChatKey(username));
+    }
+
+    // -------- LIMIT DAILY QUESTIONS --------
+    function getToday() {
+      const now = new Date();
+      return now.getFullYear() + "-" + String(now.getMonth()+1).padStart(2,"0") + "-" + String(now.getDate()).padStart(2,"0");
+    }
+    function getUserDayKey(username) {
+      return "zeta-questions-" + username;
+    }
+    function getUserCount(username) {
+      const key = getUserDayKey(username);
+      const val = localStorage.getItem(key);
+      if (val) {
+        try { return JSON.parse(val); } catch { return { date: getToday(), count: 0 }; }
+      }
+      return { date: getToday(), count: 0 };
+    }
+    function incrementUserCount(username) {
+      const key = getUserDayKey(username);
+      let {date, count} = getUserCount(username);
+      const today = getToday();
+      if(date !== today) { date = today; count = 0; }
+      count++;
+      localStorage.setItem(key, JSON.stringify({date, count}));
+      return count;
+    }
+    function resetUserCount(username) {
+      const key = getUserDayKey(username);
+      localStorage.removeItem(key);
+    }
+
+    // --------- Chat/History par utilisateur ---------
+    function saveChat(username) {
+      const arr = [];
+      chat.querySelectorAll('.msg').forEach(m => {
+        arr.push({t:m.classList.contains('user')?'user':'ai', v:m.innerText});
+      });
+      localStorage.setItem(getChatKey(username), JSON.stringify(arr.slice(-40)));
+      if(username === ADMIN_USER)
+        localStorage.setItem('zeta-chat', JSON.stringify(arr.slice(-40))); // backward compatibility
+    }
+    function restoreChat(username) {
+      let arr = JSON.parse(localStorage.getItem(getChatKey(username))||'[]');
+      if(!arr.length && username === ADMIN_USER) arr = JSON.parse(localStorage.getItem('zeta-chat')||'[]');
+      arr.forEach(m => appendMessage(m.v, m.t, false));
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    // -------- INTERFACE --------
+    const loginSection = document.getElementById('login-section');
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const loginUser = document.getElementById('login-user');
+    const loginPass = document.getElementById('login-pass');
+    const signupUser = document.getElementById('signup-user');
+    const signupPass = document.getElementById('signup-pass');
+    const signupPass2 = document.getElementById('signup-pass2');
+    const loginError = document.getElementById('login-error');
+    const signupError = document.getElementById('signup-error');
+    const signupSuccess = document.getElementById('signup-success');
+    const toSignup = document.getElementById('to-signup');
+    const toLogin = document.getElementById('to-login');
+    const togglePw = document.getElementById('toggle-pw');
+    const togglePwSignup = document.getElementById('toggle-pw-signup');
+    const mainApp = document.getElementById('main-app');
+    const logoutBtn = document.getElementById('logout-btn');
+    const newchatBtn = document.getElementById('newchat-btn');
+    const adminPanel = document.getElementById('admin-panel');
+    const adminBanner = document.getElementById('admin-banner');
+    const premiumPanel = document.getElementById('premium-panel');
+    const usersList = document.getElementById('users-list');
+    const chat = document.getElementById('chat');
+    const form = document.getElementById('form');
+    const input = document.getElementById('input');
+    const adminBtn = document.getElementById('admin-btn');
+    const clearAllHistoriesBtn = document.getElementById('clear-all-histories');
+    const searchChatsInput = document.getElementById('search-chats');
+    const searchResultDiv = document.getElementById('search-result');
+
+    toSignup.onclick = function() {
+      loginForm.style.display = "none";
+      signupForm.style.display = "";
+      signupError.style.display = "none";
+      signupSuccess.style.display = "none";
+      signupForm.reset();
+      signupUser.focus();
+    }
+    toLogin.onclick = function() {
+      signupForm.style.display = "none";
+      loginForm.style.display = "";
+      loginError.style.display = "none";
+      loginForm.reset();
+      loginUser.focus();
+    }
+
+    togglePw.onclick = function() {
+      loginPass.type = loginPass.type === "password" ? "text" : "password";
+      togglePw.innerHTML = loginPass.type === "password" ? "&#128065;" : "&#128064;";
+    }
+    togglePwSignup.onclick = function() {
+      signupPass.type = signupPass.type === "password" ? "text" : "password";
+      togglePwSignup.innerHTML = signupPass.type === "password" ? "&#128065;" : "&#128064;";
+    }
+
+    loginForm.onsubmit = function(e) {
+      e.preventDefault();
+      const u = loginUser.value.trim();
+      const p = loginPass.value;
+      const userObj = checkLogin(u, p);
+      if (userObj) {
+        loginError.style.display = "none";
+        localStorage.setItem('zeta-logged', u);
+        showApp(u);
+      } else {
+        loginError.textContent = "Identifiants invalides.";
+        loginError.style.display = "";
+      }
+    }
+
+    signupForm.onsubmit = function(e) {
+      e.preventDefault();
+      const u = signupUser.value.trim();
+      const p1 = signupPass.value, p2 = signupPass2.value;
+      signupError.style.display = "none";
+      signupSuccess.style.display = "none";
+      if(u.length < 3){
+        signupError.textContent = "Identifiant trop court (≥ 3 caractères).";
+        signupError.style.display = "";
+        return;
+      }
+      if(p1.length < 4){
+        signupError.textContent = "Mot de passe trop court (≥ 4 caractères).";
+        signupError.style.display = "";
+        return;
+      }
+      if(p1 !== p2){
+        signupError.textContent = "Les mots de passe ne correspondent pas.";
+        signupError.style.display = "";
+        return;
+      }
+      if(userExists(u)){
+        signupError.textContent = "Ce nom d'utilisateur existe déjà.";
+        signupError.style.display = "";
+        return;
+      }
+      createUser(u, p1);
+      signupSuccess.textContent = "Compte créé avec succès ! Vous pouvez vous connecter.";
+      signupSuccess.style.display = "";
+      setTimeout(()=>{
+        signupForm.style.display = "none";
+        loginForm.style.display = "";
+        loginUser.value = u;
+        loginPass.value = "";
+        loginError.style.display = "none";
+        loginUser.focus();
+      }, 1200);
+    }
+
+    adminBtn.onclick = function() {
+      loginUser.value = ADMIN_USER;
+      loginPass.value = "";
+      loginUser.focus();
+    }
+
+    function showApp(user) {
+      loginSection.style.display = "none";
+      mainApp.style.display = "";
+      chat.innerHTML = "";
+      restoreChat(user);
+      if (chat.children.length === 0) appendMessage(welcome, 'ai', true, 27);
+      if (isAdmin(user)) {
+        adminBanner.style.display = "";
+        adminPanel.style.display = "";
+        premiumPanel.style.display = "";
+        renderUsersList();
+      } else {
+        adminBanner.style.display = "none";
+        adminPanel.style.display = "none";
+        premiumPanel.style.display = "none";
+      }
+    }
+    function renderUsersList() {
+      const users = getUsers();
+      usersList.innerHTML = '';
+      users.forEach(u => {
+        const li = document.createElement('li');
+        li.className = u.admin ? "admin" : "";
+        li.innerHTML =
+          `<span>${u.user}${u.admin ? " (admin)" : ""}</span>` +
+          (u.admin
+            ? `<button disabled title="Impossible de supprimer l'admin">Supprimer</button>`
+            : `<button data-user="${u.user}">Supprimer</button>`)+
+          (!u.admin ? `<button data-reset="${u.user}" style="background:#ffd700;color:#1b2b48;margin-left:0.7em;">Réinit. quota</button>` : '');
+        usersList.appendChild(li);
+      });
+      usersList.querySelectorAll("button[data-user]").forEach(btn => {
+        btn.onclick = function() {
+          const user = btn.getAttribute("data-user");
+          if (confirm(`Supprimer le compte "${user}" ? Cette action est irréversible.`)) {
+            deleteUserAccount(user);
+            renderUsersList();
+          }
+        }
+      });
+      usersList.querySelectorAll("button[data-reset]").forEach(btn => {
+        btn.onclick = function() {
+          const user = btn.getAttribute("data-reset");
+          resetUserCount(user);
+          alert("Quota pour " + user + " réinitialisé !");
+        }
+      });
+    }
+    logoutBtn.onclick = function() {
+      const u = localStorage.getItem('zeta-logged');
+      if(u) resetUserCount(u);
+      localStorage.removeItem('zeta-logged');
+      mainApp.style.display = "none";
+      loginForm.style.display = "";
+      loginSection.style.display = "";
+      loginForm.reset();
+      loginUser.focus();
+      chat.innerHTML = '';
+    };
+    newchatBtn.onclick = function() {
+      const user = localStorage.getItem('zeta-logged');
+      clearChat(user);
+      chat.innerHTML = '';
+      appendMessage(welcome, 'ai', true, 27);
+    };
+
+    if (clearAllHistoriesBtn) {
+      clearAllHistoriesBtn.onclick = function() {
+        if (!confirm("Effacer l'historique de tous les utilisateurs ?")) return;
+        getUsers().forEach(u => clearChat(u.user));
+        chat.innerHTML = '';
+        appendMessage(welcome, 'ai', true, 27);
+        alert("Tous les historiques chats sont effacés.");
+      };
+    }
+    if (searchChatsInput) {
+      searchChatsInput.oninput = function() {
+        const q = searchChatsInput.value.trim().toLowerCase();
+        if (!q) { searchResultDiv.innerHTML = ""; return; }
+        let html = "";
+        getUsers().forEach(u => {
+          const hist = JSON.parse(localStorage.getItem(getChatKey(u.user))||'[]');
+          let found = [];
+          hist.forEach((m,i) => {
+            if ((m.v||"").toLowerCase().includes(q)) found.push(`[${m.t}] ${m.v}`);
+          });
+          if (found.length)
+            html += `<b style="color:#ffd700">${u.user}</b> :<br><span style="color:#ffe97a">${found.join('<br>')}</span><br>`;
+        });
+        searchResultDiv.innerHTML = html || "<i>🧐 Aucun résultat</i>";
+      };
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const u = localStorage.getItem('zeta-logged');
+      if(u && userExists(u)) {
+        showApp(u);
+      } else {
+        loginSection.style.display = "";
+        loginForm.style.display = "";
+        signupForm.style.display = "none";
+        loginUser.focus();
+      }
+    });
+
+    function appendMessage(text, sender = 'ai', progressive = false, speed = 23) {
+      const msg = document.createElement('div');
+      msg.className = 'msg ' + sender;
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      msg.appendChild(bubble);
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+      if (!progressive) {
+        bubble.innerText = text;
+        return;
+      }
+      let i = 0;
+      function typeChar() {
+        bubble.innerText = text.slice(0, i++);
+        chat.scrollTop = chat.scrollHeight;
+        if (i <= text.length) {
+          setTimeout(typeChar, text[i-2] === '.' || text[i-2] === '!' || text[i-2] === '?' ? speed*4 : speed);
+        }
+      }
+      typeChar();
+    }
+    async function searchDuckDuckGo(query) {
+      const url = 'https://api.duckduckgo.com/?q=' + encodeURIComponent(query) + '&format=json&no_redirect=1&no_html=1';
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Erreur de connexion');
+        const data = await res.json();
+        if (data.AbstractText) {
+          return data.AbstractText;
+        } else if (data.RelatedTopics && data.RelatedTopics.length) {
+          for (const t of data.RelatedTopics) {
+            if (t.Text) return t.Text;
+            if (t.Topics && t.Topics.length && t.Topics[0].Text)
+              return t.Topics[0].Text;
+          }
+        } else if (data.Definition) {
+          return data.Definition;
+        }
+        return null;
+      } catch (e) {
+        return null;
+      }
+    }
+    async function zetaOrionReply(prompt) {
+      const user = localStorage.getItem('zeta-logged');
+      if (!user) return;
+      if (!isAdmin(user)) {
+        let {date, count} = getUserCount(user);
+        const today = getToday();
+        if(date !== today) { count = 0; }
+        if(count >= CHAT_LIMIT) {
+          appendMessage("⛔️ Tu as atteint la limite de 25 questions aujourd'hui. Reviens demain ou contacte l'administrateur.", 'ai', true, 12);
+          return;
+        }
+        incrementUserCount(user);
+      }
+      appendMessage(prompt, 'user');
+      appendMessage("Recherche en cours...", 'ai');
+      const answer = await searchDuckDuckGo(prompt);
+      chat.removeChild(chat.lastElementChild);
+      if (answer && answer.trim()) {
+        appendMessage(answer, 'ai');
+      } else {
+        appendMessage("Désolé, je n'ai pas trouvé de réponse claire à ta question. Peux-tu reformuler ou préciser ?", 'ai');
+      }
+      saveChat(user);
+    }
+    if(form) form.addEventListener('submit', e => {
+      e.preventDefault();
+      const val = input.value.trim();
+      if (!val) return;
+      zetaOrionReply(val);
+      input.value = '';
+    });
+
+    const welcome = "Salut ! Je suis Zeta Orion AI 🤖🌌. Pose-moi une question, j'irai chercher la réponse la plus appropriée et synthétique sur le web ! Pose-moi des questions en utilisant seulement des mots-clés.";
+    window.addEventListener('DOMContentLoaded', () => {
+      const u = localStorage.getItem('zeta-logged');
+      if(u && chat && chat.children.length === 0) {
+        restoreChat(u);
+        if (chat.children.length === 0) {
+          appendMessage(welcome, 'ai', true, 27);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
